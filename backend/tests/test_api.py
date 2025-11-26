@@ -163,6 +163,7 @@ def test_update_task(client):
     update_response = client.put(f"/tasks/{task_id}", json={"title": "Nouveau Titre"})
     assert update_response.status_code == 200
     updated_task = update_response.json()
+    print(updated_task)
     assert updated_task["title"] == "Nouveau Titre"
 
     pass
