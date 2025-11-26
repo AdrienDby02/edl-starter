@@ -234,7 +234,32 @@ async def update_task(task_id: int, updates: TaskUpdate) -> Task:
     Indice: Regardez comment create_task fonctionne pour vous inspirer
     """
     # TODO: Votre code ici
-    raise HTTPException(status_code=501, detail="Update not implemented yet - complete this function!")
+    if task_id not in tasks_db:
+        raise HTTPException(status_code=404, detail=f"Task {task_id} not found")
+
+    existing_task = tasks_db[task_id]
+    update_data = updates.model_dump(exclude_unset=True)
+
+    if "title" in update_data and (not update_data["title"] or not update_data["title"].strip()):
+        raise HTTPException(status_code=422, detail="Title cannot be empty")
+    
+    if "priority" in update_data:
+        try:
+            update_data["priority"] = TaskPriority(update_data["priority"])
+        except ValueError:
+            raise HTTPException(status_code=422, detail=f"Invalid priority: {update_data['priority']}")
+    
+    data = existing_task.model_dump()
+    data.update(update_data)
+    data["id"]=task_id
+    data["created_at"]=existing_task.created_at
+    data["updated_at"]=datetime.utcnow()
+
+    update_data = Task(**data)
+
+    tasks_db[task_id] = update_data
+
+    return update_data
 
 
 @app.delete("/tasks/{task_id}", status_code=204)

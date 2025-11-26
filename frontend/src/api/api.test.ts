@@ -83,8 +83,18 @@ describe('API Module', () => {
   it.todo('deletes a task', async () => {
     // TODO: Votre code ici
     // 1. Mocker fetch pour retourner { ok: true, status: 204 }
+    (globalThis as any).fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        status: 204,
+      })
+    );
+
     // 2. Appeler await api.deleteTask(1)
+    await api.deleteTask(1);
     // 3. Vérifier que fetch a été appelé avec '/tasks/1' et method: 'DELETE'
+    expect(fetch).toHaveBeenCalledWith('/tasks/1', { method: 'DELETE' });
+
   });
 
   /**
@@ -106,5 +116,19 @@ describe('API Module', () => {
     // 1. Mocker fetch pour retourner { ok: true, json: () => Promise.resolve({ id: 1, title: 'Updated Title', ... }) }
     // 2. Appeler await api.updateTask(1, { title: 'Updated Title' })
     // 3. Vérifier que fetch a été appelé avec '/tasks/1', method: 'PUT', et body contenant le titre
+    (globalThis as any).fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ id: 1, title: 'Updated Title', status: 'todo' }),
+      })
+    );
+
+    await api.updateTask(1, { title: 'Updated Title'});
+    
+    expect(fetch).toHaveBeenCalledWith('/tasks/1', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'Updated Title' }),
+    });
   });
-});
+    });
